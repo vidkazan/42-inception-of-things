@@ -1,0 +1,33 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "spox/ubuntu-arm"
+  config.vm.box_version = "1.0.0"
+
+  config.vm.provider :vmware_fusion do |v|
+    v.ssh_info_public = true
+  end
+  
+  config.vm.define "fcoS" do |node|
+    node.vm.hostname = "fcoS"
+    node.vm.network "private_network", ip: "192.168.56.110"
+    node.vm.provision "shell", inline: <<-SHELL
+      
+      curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--tls-san 192.168.56.110" sh -s -
+
+      sudo mkdir -p /home/vagrant/.kube
+      sudo cp /etc/rancher/k3s/k3s.yaml /home/vagrant/.kube/config
+      sudo chown vagrant:vagrant /home/vagrant/.kube/config
+
+      echo 'export KUBECONFIG=/home/vagrant/.kube/config' >> /home/vagrant/.bashrc
+      echo "alias k='kubectl'" >> /home/vagrant/.bashrc
+
+      kubectl create configmap html1 --from-file=/vagrant/apps/app1/index.html
+      kubectl create configmap html2 --from-file=/vagrant/apps/app2/index.html
+      kubectl create configmap html3 --from-file=/vagrant/apps/app3/index.html
+
+      kubectl apply -f /vagrant/config/k3s.yaml
+    SHELL
+  end
+end 

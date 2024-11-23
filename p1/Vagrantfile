@@ -1,0 +1,44 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "spox/ubuntu-arm"
+  config.vm.box_version = "1.0.0"
+
+  config.vm.provider :vmware_fusion do |v|
+    v.ssh_info_public = true
+  end
+  
+  config.vm.define "fcoS" do |node|
+    node.vm.hostname = "fcoS"
+    node.vm.network "private_network", ip: "192.168.56.110"
+    node.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update -y
+      sudo apt-get install -y curl
+      curl -sfL https://get.k3s.io | sh -
+
+      sudo mkdir -p /home/vagrant/.kube
+      sudo cp /etc/rancher/k3s/k3s.yaml /home/vagrant/.kube/config
+      sudo chown vagrant:vagrant /home/vagrant/.kube/config
+      echo 'export KUBECONFIG=/home/vagrant/.kube/config' >> /home/vagrant/.bashrc
+
+      TOKEN=$(sudo cat /var/lib/rancher/k3s/server/node-token)
+      echo $TOKEN > /vagrant/token
+
+    SHELL
+  end
+
+  config.vm.define "fcoSW" do |node|
+    node.vm.hostname = "fcoSW"
+    node.vm.network "private_network", ip: "192.168.56.111"
+
+    node.vm.provision "shell",args: ["192.168.56.110"] ,inline: <<-SHELL
+      MASTER_IP=$1
+      TOKEN=$(cat /vagrant/token)
+
+        sudo apt-get update -y
+        sudo apt-get install -y curl
+        curl -sfL https://get.k3s.io | K3S_URL=https://$MASTER_IP:6443 K3S_TOKEN=$TOKEN sh -
+    SHELL
+  end
+end
