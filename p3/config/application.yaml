@@ -2,7 +2,7 @@ kind: Application
 apiVersion: argoproj.io/v1alpha1
 metadata:
   name: app
-  namespace: dev
+  namespace: argocd
 spec:
   destination:
     namespace: dev
@@ -12,5 +12,3 @@ spec:
     repoURL: https://github.com/vidkazan/42iot-sample-app.git
     targetRevision: HEAD
     path: manifests
-    directory:
-      recurse: true

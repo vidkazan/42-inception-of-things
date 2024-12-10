@@ -4,5 +4,13 @@ metadata:
   name: app
   namespace: argocd
 spec:
+  sourceRepos:
+    - https://github.com/vidkazan/*
+  destinations:
+    - namespace: dev
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
   sourceNamespaces:
-  - dev
+    - dev

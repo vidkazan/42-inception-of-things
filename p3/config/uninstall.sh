@@ -1,7 +1,7 @@
-kubectl delete pods --all -n argocd
-kubectl delete deployments --all -n argocd
-kubectl delete services --all -n argocd
-k3d cluster delete --all
+sudo kubectl delete pods --all -n argocd
+sudo kubectl delete deployments --all -n argocd
+sudo kubectl delete services --all -n argocd
+sudo k3d cluster delete --all
 
 sudo rm /usr/local/bin/k3d
 
